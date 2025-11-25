@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Conceptual: Sistema Computacional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            margin-bottom: 40px;
+        }
+
+        .node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .node:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            z-index: 20;
+        }
+
+        .node-center {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(37, 99, 235, 0.5);
+            border: 4px solid white;
+        }
+
+        .node-center .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .node-center .title {
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .node-box {
+            min-width: 220px;
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            border: 2px solid;
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .node-header .icon {
+            font-size: 1.5rem;
+        }
+
+        .node-title {
+            color: white;
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .node-items {
+            list-style: none;
+        }
+
+        .node-items li {
+            color: white;
+            font-size: 0.85rem;
+            margin: 6px 0;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .node-items li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+
+        /* Color schemes */
+        .color-purple { border-color: #9333ea; background: linear-gradient(135deg, #7c3aed, #6b21a8); }
+        .color-indigo { border-color: #4f46e5; background: linear-gradient(135deg, #6366f1, #4338ca); }
+        .color-green { border-color: #16a34a; background: linear-gradient(135deg, #22c55e, #15803d); }
+        .color-cyan { border-color: #0891b2; background: linear-gradient(135deg, #06b6d4, #0e7490); }
+        .color-teal { border-color: #0d9488; background: linear-gradient(135deg, #14b8a6, #0f766e); }
+        .color-yellow { border-color: #ca8a04; background: linear-gradient(135deg, #eab308, #a16207); }
+        .color-red { border-color: #dc2626; background: linear-gradient(135deg, #ef4444, #b91c1c); }
+
+        .efficiency-banner {
+            background: linear-gradient(135deg, #84cc16, #65a30d);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 30px rgba(132, 204, 22, 0.3);
+            border: 2px solid #4d7c0f;
+        }
+
+        .efficiency-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .efficiency-header .icon {
+            font-size: 2rem;
+        }
+
+        .efficiency-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .efficiency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .efficiency-item {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .legend-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .considerations {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #475569;
+        }
+
+        .considerations h4 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .considerations ul {
+            list-style: none;
+        }
+
+        .considerations li {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin: 10px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .considerations li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #60a5fa;
+        }
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        line {
+            stroke: #60a5fa;
+            stroke-width: 2;
+            opacity: 0.4;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .map-container {
+                height: 1000px;
+            }
+
+            .node-center {
+                width: 150px;
+                height: 150px;
+            }
+
+            .node-box {
+                min-width: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mapa Conceptual: Sistema Computacional</h1>
+            <p class="subtitle">Laptop/Desktop - Componentes, Materiales y Ciclo de Vida</p>
+        </header>
+
+        <div class="map-container">
+            <svg id="connections">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa" />
+                    </marker>
+                </defs>
+            </svg>
+
+            <!-- Central Node -->
+            <div class="node" style="left: 50%; top: 50%;">
+                <div class="node-center">
+                    <div class="icon">💻</div>
+                    <div class="title">Sistema<br>Computacional</div>
+                </div>
+            </div>
+
+            <!-- Processing -->
+            <div class="node" style="left: 20%; top: 15%;">
+                <div class="node-box color-purple">
+                    <div class="node-header">
+                        <span class="icon">⚙️</span>
+                        <span class="node-title">Procesamiento</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>CPU</li>
+                        <li>GPU</li>
+                        <li>Chipset</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div class="node" style="left: 80%; top: 15%;">
+                <div class="node-box color-indigo">
+                    <div class="node-header">
+                        <span class="icon">💾</span>
+                        <span class="node-title">Memoria/Almacenamiento</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>RAM</li>
+                        <li>SSD/HDD</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Energy -->
+            <div class="node" style="left: 15%; top: 50%;">
+                <div class="node-box color-green">
+                    <div class="node-header">
+                        <span class="icon">⚡</span>
+                        <span class="node-title">Energía</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>PSU / Batería + Cargador</li>
+                        <li>Certificación 80 Plus</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Interface -->
+            <div class="node" style="left: 85%; top: 50%;">
+                <div class="node-box color-cyan">
+                    <div class="node-header">
+                        <span class="icon">🖥️</span>
+                        <span class="node-title">Interfaz/Estructura</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>Placa Base</li>
+                        <li>Chasis</li>
+                        <li>Pantalla</li>
+                        <li>Teclado</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cooling -->
+            <div class="node" style="left: 20%; top: 85%;">
+                <div class="node-box color-teal">
+                    <div class="node-header">
+                        <span class="icon">🌬️</span>
+                        <span class="node-title">Refrigeración</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>Ventiladores</li>
+                        <li>Disipadores</li>
+                        <li>TDP (CPU)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Materials -->
+            <div class="node" style="left: 50%; top: 85%;">
+                <div class="node-box color-yellow">
+                    <div class="node-header">
+                        <span class="icon">🔧</span>
+                        <span class="node-title">Materiales Críticos</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>Silicio (CPU/RAM)</li>
+                        <li>Oro (pines)</li>
+                        <li>Tierras Raras</li>
+                        <li>Litio (Batería)</li>
+                        <li>Cobalto (Batería)</li>
+                        <li>Tantalio</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Obsolescence -->
+            <div class="node" style="left: 80%; top: 85%;">
+                <div class="node-box color-red">
+                    <div class="node-header">
+                        <span class="icon">⚠️</span>
+                        <span class="node-title">Puntos de Obsolescencia</span>
+                    </div>
+                    <ul class="node-items">
+                        <li>Batería sellada/pegada</li>
+                        <li>RAM soldada</li>
+                        <li>Socket CPU descontinuado</li>
+                        <li>Fin de soporte Drivers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // Draw connection lines from center to all nodes
+        function drawConnections() {
+            const svg = document.getElementById('connections');
+            const centerNode = document.querySelector('.node-center');
+            const nodes = document.querySelectorAll('.node-box');
+            
+            const centerRect = centerNode.getBoundingClientRect();
+            const containerRect = svg.getBoundingClientRect();
+            
+            const centerX = centerRect.left + centerRect.width / 2 - containerRect.left;
+            const centerY = centerRect.top + centerRect.height / 2 - containerRect.top;
+            
+            nodes.forEach(node => {
+                const nodeRect = node.getBoundingClientRect();
+                const nodeX = nodeRect.left + nodeRect.width / 2 - containerRect.left;
+                const nodeY = nodeRect.top + nodeRect.height / 2 - containerRect.top;
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', centerX);
+                line.setAttribute('y1', centerY);
+                line.setAttribute('x2', nodeX);
+                line.setAttribute('y2', nodeY);
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+                
+                svg.appendChild(line);
+            });
+        }
+
+        // Add hover effects
+        document.querySelectorAll('.node').forEach(node => {
+            node.addEventListener('mouseenter', function() {
+                this.style.zIndex = '30';
+            });
+            
+            node.addEventListener('mouseleave', function() {
+                this.style.zIndex = '10';
+            });
+        });
+
+        // Draw connections on load and resize
+        window.addEventListener('load', drawConnections);
+        window.addEventListener('resize', () => {
+            document.getElementById('connections').innerHTML = '<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#60a5fa" /></marker></defs>';
+            drawConnections();
+        });
+    </script>
+</body>
+</html>
